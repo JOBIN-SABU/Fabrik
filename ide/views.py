@@ -12,11 +12,17 @@ from utils.shapes import get_shapes, get_layer_shape, handle_concat_layer
 
 
 def index(request):
+    """
+    Render the home page.
+    """
     return render(request, 'index.html')
 
 
 @csrf_exempt
 def fetch_layer_shape(request):
+    """
+    Fetch the shape of a specific layer.
+    """
     if request.method == 'POST':
         net = yaml.safe_load(request.POST.get('net'))
         layerId = request.POST.get('layerId')
@@ -61,6 +67,9 @@ def fetch_layer_shape(request):
 
 @csrf_exempt
 def calculate_parameter(request):
+    """
+    Calculate parameters for the model.
+    """
     if request.method == 'POST':
         net = yaml.safe_load(request.POST.get('net'))
         try:
@@ -84,6 +93,9 @@ def calculate_parameter(request):
 
 @csrf_exempt
 def save_to_db(request):
+    """
+    Save a model to the database.
+    """
     if request.method == 'POST':
         net = request.POST.get('net')
         net_name = request.POST.get('net_name')
@@ -198,6 +210,9 @@ def get_checkpoint_version(netObj, checkpoint_id):
 
 @csrf_exempt
 def load_from_db(request):
+    """
+    Load a model from the database.
+    """
     if request.method == 'POST':
         if 'proto_id' in request.POST:
             try:
@@ -232,6 +247,9 @@ def load_from_db(request):
 
 @csrf_exempt
 def fetch_model_history(request):
+    """
+    Fetch the history of a model.
+    """
     if request.method == 'POST':
         try:
             network_id = int(request.POST['net_id'])

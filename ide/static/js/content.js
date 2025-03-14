@@ -219,38 +219,59 @@ class Content extends React.Component {
     // socket error handling goes here
     this.addError(error);
   }
-  waitForConnection(callback, interval=100) {
-    // delay hook used while creating a new socket
-    const socket = this.state.socket;
-    if (socket != null && socket.readyState === 1) {
-      callback();
-    }
-    else {
-      var that = this;
-      setTimeout(function () {
-          that.waitForConnection(callback, interval);
-      }, interval);
-    }
-  }
-  performSharedUpdate(layerId, param, value, isProp) {
-    // method to handle pre-processing of message before sending
-    // through a socket based on type of action, will be extended further
-    // as per requirement of message types.
-    let msg = '';
-    msg = 'Layer parameter updated';
+  /**
+ * Waits for the WebSocket connection to be established before executing a callback.
+ *
+ * @param {Function} callback - The function to execute once the connection is ready.
+ * @param {number} [interval=100] - The delay (in milliseconds) before checking again.
+ */
+waitForConnection(callback, interval = 100) {
+  const socket = this.state?.socket;
 
-    this.sendSocketMessage({
-      layerId: layerId,
-      param: param,
-      value: value,
-      isProp: isProp,
-      action: 'UpdateParam',
-      message: msg,
-      nextLayerId: this.state.nextLayerId,
-      randomId: this.state.randomId
-    });
+  if (socket && socket.readyState === 1) {
+      callback();
+  } else {
+      setTimeout(() => {
+          this.waitForConnection(callback, interval);
+      }, interval);
   }
-  performSharedAdd(layer, prevLayerId, nextLayerId, layerId) {
+}
+
+/**
+* Updates a shared RTC model by sending a socket message.
+*
+* @param {string} layerId - The unique ID of the layer being updated.
+* @param {string} param - The parameter being modified in the layer.
+* @param {any} value - The new value assigned to the parameter.
+* @param {boolean} isProp - Indicates whether the parameter is a property.
+*/
+performSharedUpdate(layerId, param, value, isProp) {
+  if (!layerId || !param) {
+      console.error("Invalid input: layerId and param are required.");
+      return;
+  }
+
+  const msg = `Layer parameter '${param}' updated to '${value}'.`;
+
+  // Ensure WebSocket is connected before sending the message
+  this.waitForConnection(() => {
+      this.sendSocketMessage({
+          layerId,
+          param,
+          value,
+          isProp,
+          action: 'UpdateParam',
+          message: msg,
+          nextLayerId: this.state?.nextLayerId || null,
+          randomId: this.state?.randomId || null
+      });
+
+      console.log(`performSharedUpdate: Sent update for Layer ${layerId} - ${param}: ${value}`);
+  });
+}
+
+  }
+  performSharedAdd(layer, prevLayerId, nextLayerId, layerId); {
     let  msg = 'New layer added';
 
     this.sendSocketMessage({
@@ -263,7 +284,7 @@ class Content extends React.Component {
       randomId: this.state.randomId
     })
   }
-  performSharedDelete(net, layerId, nextLayerId) {
+  performSharedDelete(net, layerId, nextLayerId); {
     let  msg = 'Delete existing layer';
 
     this.sendSocketMessage({
@@ -274,7 +295,7 @@ class Content extends React.Component {
       randomId: this.state.randomId
     })
   }
-  addHighlightOnLayer(layerId, previousLayerId) {
+  addHighlightOnLayer(layerId, previousLayerId);{
     this.sendSocketMessage({
       addHighlightTo: layerId,
       removeHighlightFrom: previousLayerId,
@@ -285,7 +306,7 @@ class Content extends React.Component {
       username: this.getUserName()
     })
   }
-  addSharedComment(layerId, comment) {
+  addSharedComment(layerId, comment); {
     this.sendSocketMessage({
       layerId: layerId,
       comment: comment,
@@ -293,7 +314,7 @@ class Content extends React.Component {
       randomId: this.state.randomId
     })
   }
-  downloadModel(response) {
+  downloadModel(response);{
     const downloadAnchor = document.getElementById('download');
     downloadAnchor.download = response.name;
     downloadAnchor.href = response.url;
@@ -320,25 +341,25 @@ class Content extends React.Component {
       );
     }
   }
-  openModal() {
+  openModal(); {
     this.setState({ modalIsOpen: true });
   }
-  closeModal() {
+  closeModal();{
     this.setState({ modalIsOpen: false });
   }
-  setUserId(user_id) {
+  setUserId(user_id);{
     UserProfile.setUserId(user_id);
   }
-  getUserId() {
+  getUserId();{
     return UserProfile.getUserId();
   }
-  setUserName(name) {
+  setUserName(name);{
     UserProfile.setUsername(name);
   }
-  getUserName() {
+  getUserName();{
     return UserProfile.getUsername();
   }
-  addNewLayer(layer, prevLayerId, publishUpdate=true) {
+  addNewLayer(layer, prevLayerId, publishUpdate=true);{
     const net = this.state.net;
     const layerId = `l${this.state.nextLayerId}`;
     const nextLayerId = this.state.nextLayerId;
@@ -379,12 +400,12 @@ class Content extends React.Component {
       this.performSharedAdd(net[layerId], prevLayerId, nextLayerId + 1, layerId);
     }
   }
-  changeCommentOnLayer(layerId) {
+  changeCommentOnLayer(layerId);{
     this.setState({
       commentOnLayer: layerId
     });
   }
-  changeSelectedLayer(layerId) {
+  changeSelectedLayer(layerId);{
     const net = this.state.net;
     if (this.state.selectedLayer) {
       // remove css from previously selected layer
@@ -399,7 +420,7 @@ class Content extends React.Component {
     }
     this.setState({ net, selectedLayer: layerId });
   }
-  changeHoveredLayer(layerId) {
+  changeHoveredLayer(layerId);{
     const net = this.state.net;
     if (this.state.hoveredLayer && this.state.hoveredLayer in net) {
       // remove css from previously selected layer
@@ -412,7 +433,7 @@ class Content extends React.Component {
     this.setState({ net, hoveredLayer: layerId });
   }
 
-  modifyLayer(layer, layerId = this.state.selectedLayer) {
+  modifyLayer(layer, layerId = this.state.selectedLayer);{
     const net = this.state.net;
     var oldLayerParams = this.state.totalParameters;
     if (net[layerId]['shape']['input'] != null && net[layerId]['shape']['output'] != null)
@@ -425,7 +446,7 @@ class Content extends React.Component {
     }
     this.setState({ net: net, totalParameters: oldLayerParams });
   }
-  modifyLayerParams(layer, layerId = this.state.selectedLayer) {
+  modifyLayerParams(layer, layerId = this.state.selectedLayer);{
     const net = this.state.net;
     let index;
 
@@ -488,7 +509,7 @@ class Content extends React.Component {
       this.setState({ net });
     }
   }
-  deleteLayer(layerId, publishUpdate=true) {
+  deleteLayer(layerId, publishUpdate=true);{
     const net = this.state.net;
     const input = net[layerId].connection.input;
     const output = net[layerId].connection.output;
@@ -515,7 +536,7 @@ class Content extends React.Component {
     }
   }
 
-  updateLayerShape(net, layerId) {
+  updateLayerShape(net, layerId);{
     const netData = JSON.parse(JSON.stringify(net));
     Object.keys(netData[layerId].params).forEach(param => {
       netData[layerId].params[param] = netData[layerId].params[param][0];
@@ -546,7 +567,7 @@ class Content extends React.Component {
       }.bind(this)
     });
   }
-  getLayerParameters(layer, net) {
+  getLayerParameters(layer, net);{
     // check for layers with no shape to avoid errors
     // this can be improved further.
     if (layer['shape']['input'] == null || layer['shape']['output'] == null) {
@@ -606,7 +627,7 @@ class Content extends React.Component {
     // Update the total parameters of model after considering this layer.
     return (weight_params + bias_params);
   }
-  calculateParameters(net) {
+  calculateParameters(net);{
     // Iterate over model's each layer & separately add the contribution of each layer
     var totalParameters = 0;
 
@@ -617,7 +638,7 @@ class Content extends React.Component {
     });
     this.setState({ net: net, totalParameters: totalParameters});
   }
-  loadLayerShapes() {
+  loadLayerShapes();{
     this.dismissAllErrors();
     // Making call to endpoint inorder to obtain shape of each layer i.e. input & output shape
     const netData = JSON.parse(JSON.stringify(this.state.net));
@@ -640,7 +661,7 @@ class Content extends React.Component {
       }
     });
   }
-  exportPrep(callback) {
+  exportPrep(callback);{
     this.dismissAllErrors();
     const error = [];
     const netObj = JSON.parse(JSON.stringify(this.state.net));
@@ -668,7 +689,7 @@ class Content extends React.Component {
       callback(netObj);
     }
   }
-  exportNet(framework) {
+  exportNet(framework);{
     this.exportPrep(function(netData) {
       Object.keys(netData).forEach(layerId => {
         delete netData[layerId].state;
@@ -688,7 +709,7 @@ class Content extends React.Component {
 
     }.bind(this));
   }
-  importNet(framework, id) {
+  importNet(framework, id);{
     this.dismissAllErrors();
     this.closeModal();
     this.clickEvent = false;
@@ -759,7 +780,7 @@ class Content extends React.Component {
       }.bind(this)
     });
   }
-  initialiseImportedNet(net,net_name) {
+  initialiseImportedNet(net,net_name);{
     // this line will unmount all the layers
     // so that the new imported layers will all be mounted again
     const tempError = {};
@@ -830,13 +851,13 @@ class Content extends React.Component {
       });
     }
   }
-  setDraggingLayer(id) {
+  setDraggingLayer(id);{
     this.setState({ draggingLayer: id })
   }
-  changeNetName(event) {
+  changeNetName(event);{
     this.setState({net_name: event.target.value});
   }
-  adjustParameters(layer, para, value) {
+  adjustParameters(layer, para, value);{
     if (para == 'layer_type'){
       if (layer.info['type'] == 'Convolution' || layer.info['type'] == 'Pooling'){
         if (value == '1D'){
@@ -907,38 +928,38 @@ class Content extends React.Component {
     }
     return layer;
   }
-  changeNetStatus(bool) {
+  changeNetStatus(bool);{
     this.setState({ rebuildNet: bool });
   }
-  changeNetPhase(phase) {
+  changeNetPhase(phase);{
     const net = this.state.net;
     this.setState({ net, selectedPhase: phase, rebuildNet: true });
   }
-  dismissError(errorIndex) {
+  dismissError(errorIndex);{
     const error = this.state.error;
     error.splice(errorIndex, 1);
     this.setState({ error, info: []});
   }
-  addError(errorText) {
+  addError(errorText);{
     const error = this.state.error;
     error.push(errorText);
     this.setState({ error });
   }
-  dismissAllErrors() {
+  dismissAllErrors();{
     this.setState({ error: [] });
     this.setState({ info: [] });
   }
-  addInfo(infoContent) {
+  addInfo(infoContent);{
     const info = this.state.info;
     info.push(infoContent)
     this.setState({ info, error: [] })
   }
-  dismissInfo(infoIndex) {
+  dismissInfo(infoIndex);{
     const info = this.state.info;
     info.splice(infoIndex, 1);
     this.setState({ info });
   }
-  copyTrain() {
+  copyTrain();{
     const net = this.state.net;
     Object.keys(net).forEach(layerId => {
       if (net[layerId].info.phase === 0) {
@@ -953,7 +974,7 @@ class Content extends React.Component {
       rebuildNet: true
     });
   }
-  trainOnly() {
+  trainOnly();{
     const net = this.state.net;
     const layer = net[this.state.selectedLayer];
     const layerId = this.state.selectedLayer;
@@ -979,7 +1000,7 @@ class Content extends React.Component {
     layer.info.phase = 0;
     this.setState({ net });
   }
-  saveDb(){
+  saveDb();{
     let netData = this.state.net;
     this.setState({ load: true });
 
@@ -1010,7 +1031,7 @@ class Content extends React.Component {
       }
     });
   }
-  componentWillMount(){
+  componentWillMount();{
     var url = window.location.href.split('#');
     var urlParams = {};
     let randomId = url[1];
@@ -1050,49 +1071,58 @@ class Content extends React.Component {
       }
     }
   }
-  loadDb(id, version_id = null) {
-    // in case model is getting loaded from history disable sending updates
-    // Note: this needs to be improved when handling conflict resolution to avoid
-    // inconsistent states of model
-    let nextLayerId = this.state.nextLayerId;
+  l/**
+ * Loads a model from the database and updates the UI accordingly.
+ * If the model is loaded from history, updates are disabled to prevent inconsistencies.
+ * 
+ * @param {string} id - The unique identifier for the model.
+ * @param {string|null} [version_id=null] - The version ID of the model (optional).
+ */
+loadDb(id, version_id = null);{
+  // In case model is getting loaded from history, disable sending updates
+  // Note: This needs to be improved when handling conflict resolution
+  // to avoid inconsistent states of the model
+  let nextLayerId = this.state.nextLayerId;
 
-    this.setState({ load: true });
+  this.setState({ load: true });
 
-    this.dismissAllErrors();
-    $.ajax({
-      url: '/load',
-      dataType: 'json',
-      type: 'POST',
-      data: {
-        proto_id: id,
-        version_id: version_id
-      },
-      success: function (response) {
-        if (response.result === 'success'){
-          // while loading a model ensure paramete intialisation
-          // for UI show/hide is not executed, it leads to inconsistent
-          // data which cannot be used further
-          nextLayerId = response.next_layer_id;
-          this.initialiseImportedNet(response.net,response.net_name);
-          if (Object.keys(response.net).length){
-            this.calculateParameters(response.net);
-          }
+  this.dismissAllErrors();
+  
+  $.ajax({
+    url: '/load',
+    dataType: 'json',
+    type: 'POST',
+    data: {
+      proto_id: id,
+      version_id: version_id
+    },
+    success: function (response) {
+      if (response.result === 'success') {
+        // Ensure parameter initialization while loading a model
+        // Prevents UI inconsistencies that could lead to unusable data
+        nextLayerId = response.next_layer_id;
+        this.initialiseImportedNet(response.net, response.net_name);
+        if (Object.keys(response.net).length) {
+          this.calculateParameters(response.net);
         }
-        else if (response.result === 'error') {
-          this.addError(response.error);
-        }
-        this.setState({
-          load: false,
-          isShared: true,
-          nextLayerId: parseInt(nextLayerId)
-        });
-      }.bind(this),
-      error() {
-        this.setState({ load: false });
+      } else if (response.result === 'error') {
+        this.addError(response.error);
       }
-    });
-  }
-  infoModal() {
+      
+      this.setState({
+        load: false,
+        isShared: true,
+        nextLayerId: parseInt(nextLayerId)
+      });
+    }.bind(this),
+    
+    error: () => {
+      this.setState({ load: false });
+    }
+  });
+}
+
+  infoModal();{
     this.modalHeader = "About"
     this.modalContent = `Fabrik is an online collaborative platform to build and visualize deep\
                          learning models via a simple drag-and-drop interface. It allows researchers to\
@@ -1101,7 +1131,7 @@ class Content extends React.Component {
                          Keras, and TensorFlow.`;
     this.openModal();
   }
-  faqModal() {
+  faqModal();{
     this.modalHeader = "Help/FAQ"
     this.modalContent = (<p><b>Q:</b> What is Fabrik?<br />
       <b>A:</b> Fabrik is an online platform, created by CloudCV, allowing AI researchers and enthusiasts to
@@ -1133,37 +1163,37 @@ class Content extends React.Component {
       </p>);
     this.openModal();
   }
-  toggleSidebar() {
+  toggleSidebar();{
     $('#sidebar').toggleClass('visible');
     $('.sidebar-button').toggleClass('close');
   }
-  zooModal() {
+  zooModal();{
     this.modalHeader = null;
     this.modalContent = <ModelZoo importNet={this.importNet} />;
     this.openModal();
   }
-  setModelFramework(e) {
+  setModelFramework(e);{
     const el = e.target;
     const modelFramework = el.dataset.framework;
     this.setState({modelFramework});
     $('.import-textbox-tab.selected').removeClass('selected');
     $(el).addClass('selected');
   }
-  setModelFrameworkUrl(e) {
+  setModelFrameworkUrl(e);{
     const el = e.target;
     const modelFramework = el.dataset.framework;
     this.setState({modelFramework});
     $('.url-import-modal-tab.selected').removeClass('selected');
     $(el).addClass('selected');
   }
-  setModelConfig(e) {
+  setModelConfig(e);{
     const modelConfig = e.target.value;
     this.setState({modelConfig});
   }
-  setModelUrl(url) {
+  setModelUrl(url);{
     this.setState({ modelUrl: url});
   }
-  textboxModal() {
+  textboxModal();{
     this.modalHeader = null;
     this.modalContent = <ImportTextbox
                           modelConfig={this.state.modelConfig}
@@ -1175,7 +1205,7 @@ class Content extends React.Component {
                         />;
     this.openModal();
   }
-  urlModal() {
+  urlModal();{
     this.modalHeader = null;
     this.modalContent = <UrlImportModal
                           modelFramework={this.state.modelFramework}
@@ -1186,7 +1216,7 @@ class Content extends React.Component {
                         />;
     this.openModal();
   }
-  updateHistoryModal() {
+  updateHistoryModal();{
     $.ajax({
       url: '/model_history',
       dataType: 'json',
@@ -1214,7 +1244,7 @@ class Content extends React.Component {
       }
     });
   }
-  handleClick(event) {
+  handleClick(event) ;{
     event.preventDefault();
     this.clickEvent = true;
 
@@ -1282,7 +1312,7 @@ class Content extends React.Component {
       this.addNewLayer(layer);
     }
   }
-  render() {
+  render();{
     let loader = null;
     if (this.state.load) {
       loader = (<div className="loaderOverlay">
@@ -1406,6 +1436,5 @@ class Content extends React.Component {
       </div>
     );
   }
-}
 
 export default Content;

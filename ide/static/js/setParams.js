@@ -16,7 +16,7 @@ class SetParams extends React.Component {
     let layer = net[this.props.selectedLayer];
     layer = JSON.parse(JSON.stringify(layer));
     layer.props[prop] = value;
-    this.props.performSharedUpdate(this.props.selectedLayer, prop, value, true);
+    this.props.updateLayerProp(this.props.selectedLayer, prop, value, true);
     this.props.modifyLayer(layer);
   }
   changeParams(para, value) {
